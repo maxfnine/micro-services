@@ -21,10 +21,20 @@ app.post('/events',(request,response)=>{
     }
 
     if(type === 'CommentCreated'){
-        const {id,content,postId} = data;
+        const {id,content,postId,status} = data;
         post = posts[postId];
         post.comments = post.comments || [];
-        post.comments.push({id,content});
+        post.comments.push({id,content,status});
+    }
+
+    if(type === 'CommentUpdated'){
+        const {id,content,postId,status} = data;
+        post = posts[postId];
+        const comment = post.comments.find(comment=>comment.id===id);
+        comment.id = id;
+        comment.content = content;
+        comment.postId = postId;
+        comment.status = status;
     }
 
     response.send({});
