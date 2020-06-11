@@ -7,6 +7,8 @@ import {
   NotFoundError,
   NotAuthorizedError,
 } from "@mftickets/common";
+import { natsWrapper } from "../nats-wrapper";
+import { TicketUpdatedPublisher } from "../events/publishers/ticket-updated-publisher";
 
 const router = express.Router();
 
@@ -36,6 +38,12 @@ router.put(
     });
 
     await ticket.save();
+    new TicketUpdatedPublisher(natsWrapper.client).publish({
+      id: ticket.id,
+      title: ticket.title,
+      price: ticket.price,
+      userId: request.currentUser!.id,
+    });
     response.send(ticket);
   }
 );
