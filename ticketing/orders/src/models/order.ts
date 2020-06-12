@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
-import { OrderStatus } from "@mftickets/common";
 import { TicketDoc } from "./ticket";
+import { OrderStatus } from "@mftickets/common";
+export { OrderStatus };
 
 //Interface for required Order properties
 interface OrderAttrs {
@@ -47,7 +48,7 @@ const orderSchema = new mongoose.Schema(
     toJSON: {
       transform(doc, ret) {
         ret.id = ret._id;
-        delete ret.id;
+        delete ret._id;
       },
     },
   }
