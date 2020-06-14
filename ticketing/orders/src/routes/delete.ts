@@ -5,6 +5,9 @@ import {
   NotFoundError,
   NotAuthorizedError,
 } from "@mftickets/common";
+import { OrderCancelledPublisher } from "../events/publishers/order-cancelled-publisher";
+import { natsWrapper } from "../nats-wrapper";
+
 const router = express.Router();
 
 router.delete(
@@ -12,7 +15,7 @@ router.delete(
   requireAuth,
   async (request: Request, response: Response) => {
     const orderId = request.params.orderId;
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("ticket");
     if (!order) {
       throw new NotFoundError();
     }
@@ -23,6 +26,14 @@ router.delete(
 
     order.status = OrderStatus.Cancelled;
     await order.save();
+
+    new OrderCancelledPublisher(natsWrapper.client).publish({
+      id: order.id,
+      version: order.version,
+      ticket: {
+        id: order.ticket.id,
+      },
+    });
 
     response.status(204).send(order);
   }
