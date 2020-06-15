@@ -6,6 +6,7 @@ import {
   requireAuth,
   NotFoundError,
   NotAuthorizedError,
+  BadRequestError,
 } from "@mftickets/common";
 import { natsWrapper } from "../nats-wrapper";
 import { TicketUpdatedPublisher } from "../events/publishers/ticket-updated-publisher";
@@ -26,6 +27,10 @@ router.put(
     const ticket = await Ticket.findById(request.params.id);
     if (!ticket) {
       throw new NotFoundError();
+    }
+
+    if (ticket.orderId) {
+      throw new BadRequestError("Cnnot edit a reserved ticket");
     }
 
     if (ticket.userId !== request.currentUser!.id) {
